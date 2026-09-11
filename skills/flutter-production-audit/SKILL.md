@@ -761,6 +761,65 @@ Re-check the relevant code path and evidence.
 - If the disagreement depends on unavailable runtime/platform evidence, move
   the disputed part to Needs verification.
 
+## Evidence reset after correction or retraction
+
+When a previous finding, assumption, or evidence interpretation is shown to be
+wrong, treat all conclusions that depended on it as invalidated until they are
+independently re-verified.
+
+A correction does not authorize replacing one unsupported root cause with
+another.
+
+After retracting or correcting a finding:
+
+1. Identify which previous evidence was invalid.
+2. Identify every conclusion that depended on that evidence.
+3. Re-verify the underlying artifacts, code paths, or runtime behavior using a
+   valid method.
+4. Rebuild the diagnosis only from evidence that remains valid after
+   re-verification.
+5. Reclassify confidence from scratch.
+
+Do not carry forward claims merely because they appeared in an earlier report.
+
+Do not generalize a successful re-verification of one artifact to related
+artifacts.
+
+For example:
+
+- proving that one PNG is valid does not prove that other generated PNGs are
+  valid
+- proving that a resource exists does not prove which resource Android renders
+  at runtime
+- proving that an icon is structurally valid does not prove how an OEM system
+  UI will display it
+- disproving one root cause does not confirm the next plausible explanation
+
+When the corrected diagnosis depends on Android/iOS/framework/OEM runtime
+behavior that was not directly verified, classify that part as:
+
+**Needs verification**
+
+or **Likely** only when strong independent evidence supports it.
+
+Never promote a replacement root cause to Confirmed simply because the previous
+root cause was disproved.
+
+### Correction consistency check
+
+Before issuing a revised diagnosis, ask:
+
+- What exactly was wrong in the previous analysis?
+- Which earlier conclusions are now invalid?
+- Which evidence has actually been re-verified?
+- Am I reusing any evidence produced by the flawed method?
+- Am I extending verification from one artifact to another without checking it?
+- Does the new root cause require runtime/platform behavior that has not been
+  observed?
+
+If any material dependency remains unverified, preserve that uncertainty in the
+final classification.
+
 User disagreement is not evidence by itself.
 
 Likewise, previous assistant claims are not evidence by themselves.
