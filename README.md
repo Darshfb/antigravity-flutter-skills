@@ -1,38 +1,448 @@
-# Antigravity Flutter Skills
+Antigravity Flutter Skills
 
 A production-focused Flutter skill set for Antigravity, designed to improve full-project audits, implementation safety, codebase consistency, state-management reasoning, performance analysis, responsive UI, accessibility/RTL review, and post-implementation validation.
 
-The system is built around a simple principle:
+Understand first. Verify with evidence. Change only with authorization. Validate before claiming success.
 
-> **Understand first. Verify with evidence. Change only with authorization. Validate before claiming success.**
+These skills are intentionally architecture-neutral. They do not force Bloc, Riverpod, Provider, go_router, Dio, a particular database, dependency-injection framework, or project structure.
 
-These skills are intentionally architecture-neutral. They do not force Bloc, Riverpod, Provider, `go_router`, Dio, a particular database, dependency-injection framework, or project structure.
+They work with the architecture already present in a Flutter project and report problems only when there is concrete evidence of a correctness, reliability, performance, accessibility, maintainability, or production-readiness risk.
 
-They work with the architecture already present in the Flutter project and report problems only when there is concrete evidence of a correctness, reliability, performance, accessibility, maintainability, or production-readiness risk.
+Quick Start
 
----
+Recommended: install into the current Flutter project
 
-## Skills
+Run this from the root of the Flutter project where you want Antigravity to use the skills:
+
+npx skills add Darshfb/antigravity-flutter-skills --skill '*' --agent antigravity
+
+The skills CLI discovers all seven skills in this repository and installs them for Antigravity at project scope.
+
+Expected project structure:
+
+your_flutter_project/
+└── .agents/
+    └── skills/
+        ├── flutter-a11y-rtl/
+        ├── flutter-codebase-conventions/
+        ├── flutter-performance/
+        ├── flutter-production-audit/
+        ├── flutter-responsive/
+        ├── flutter-review-gate/
+        └── flutter-state-management/
+
+Project installation is the recommended starting point because it keeps the skill set tied to one workspace and makes it easy to test or share with that project.
+
+Preview the skills before installing
+
+npx skills add Darshfb/antigravity-flutter-skills --list
+
+The repository should report 7 skills.
+
+Install only one skill
+
+npx skills add Darshfb/antigravity-flutter-skills \
+  --skill flutter-production-audit \
+  --agent antigravity
+
+Verify the project installation from the CLI
+
+From the same project root:
+
+npx skills ls -a antigravity
+
+You should see the installed Flutter skills listed for the current project.
+
+Verify Antigravity actually discovered the skills
+
+After installation:
+
+Restart Antigravity, or start a new Antigravity session for the project.
+
+Confirm the project is opened from its actual workspace root.
+
+If Antigravity exposes project skills in its UI, open one and confirm it resolves from .agents/skills/.
+
+Run this lightweight discovery check in a new conversation:
+
+Explicitly load and follow `flutter-production-audit`.
+
+Before starting any audit, confirm whether the skill was successfully
+discovered and loaded for this workspace.
+
+Do not modify any project files.
+
+For the strongest practical verification, use both the CLI listing and the Antigravity runtime check. The CLI confirms installation; the runtime check confirms that the current Antigravity session can discover and load the skill.
+
+Installation
+
+The repository supports both project-scoped and global installation.
+
+Recommended order:
+
+Project installation with npx skills
+
+Global Antigravity installation with npx skills
+
+Repository scripts when you specifically prefer script-based installation
+
+Manual copying as a fallback
+
+1. Project Installation — Recommended
+
+Project scope is the default for skills.
+
+Run from the Flutter project's root directory:
+
+npx skills add Darshfb/antigravity-flutter-skills --skill '*' --agent antigravity
+
+This installs all seven skills into the current project for Antigravity.
+
+Expected location:
+
+<project>/.agents/skills/
+
+Non-interactive project installation
+
+Useful for repeatable setup:
+
+npx skills add Darshfb/antigravity-flutter-skills \
+  --skill '*' \
+  --agent antigravity \
+  --yes
+
+Install selected skills only
+
+Example:
+
+npx skills add Darshfb/antigravity-flutter-skills \
+  --skill flutter-production-audit \
+  --skill flutter-review-gate \
+  --agent antigravity
+
+2. Global Antigravity Installation
+
+Use global installation when you want these skills available across Antigravity projects for the current user.
+
+The same command works from macOS, Linux, and Windows as long as Node.js/npm and npx are available.
+
+npx skills add Darshfb/antigravity-flutter-skills \
+  --skill '*' \
+  --agent antigravity \
+  --global
+
+The Antigravity global location managed by the skills CLI is:
+
+~/.gemini/antigravity/skills/
+
+On Windows, ~ resolves to the current user's home/profile directory.
+
+Non-interactive global installation
+
+npx skills add Darshfb/antigravity-flutter-skills \
+  --skill '*' \
+  --agent antigravity \
+  --global \
+  --yes
+
+Verify the global installation
+
+npx skills ls -g -a antigravity
+
+Then restart Antigravity or start a new session and run:
+
+Explicitly load and follow `flutter-production-audit`.
+
+Before doing anything else, confirm whether the skill was successfully
+discovered and loaded.
+
+Do not modify project files.
+
+3. Update Installed Skills
+
+Project scope:
+
+npx skills update
+
+Global scope:
+
+npx skills update -g
+
+List project skills:
+
+npx skills list
+
+List global skills:
+
+npx skills ls -g
+
+Filter to Antigravity:
+
+npx skills ls -a antigravity
+
+Global Antigravity only:
+
+npx skills ls -g -a antigravity
+
+4. Remove Skills Installed with the Skills CLI
+
+Interactive removal:
+
+npx skills remove
+
+Remove from global scope:
+
+npx skills remove --global
+
+Filter removal to Antigravity:
+
+npx skills remove --agent antigravity
+
+Use the interactive selection when you want to keep unrelated skills installed by other repositories.
+
+5. Script-Based Installation
+
+The repository also includes native installation, verification, and uninstall scripts.
+
+These are useful when you prefer a repository-managed copy workflow rather than the skills CLI.
+
+Clone the repository
+
+git clone https://github.com/Darshfb/antigravity-flutter-skills.git
+cd antigravity-flutter-skills
+
+macOS / Linux
+
+Verify:
+
+chmod +x verify.sh
+./verify.sh
+
+Project installation:
+
+chmod +x install.sh
+./install.sh --project /path/to/flutter/project
+
+Current directory:
+
+./install.sh --project .
+
+Project destination:
+
+<project>/.agents/skills/
+
+Global script-based installation:
+
+./install.sh --global
+
+The repository's script-based global destination is:
+
+~/.gemini/config/skills/
+
+The npx skills global Antigravity install uses Antigravity's CLI-managed global skills location, while this repository's native installer keeps its existing compatibility destination. Prefer one global installation method consistently to avoid duplicate copies being discovered from multiple locations.
+
+Uninstall from project:
+
+./uninstall.sh --project /path/to/flutter/project
+
+Uninstall script-based global copy:
+
+./uninstall.sh --global
+
+Windows PowerShell
+
+Verify with Windows PowerShell:
+
+powershell -ExecutionPolicy Bypass -File .\verify.ps1
+
+Or PowerShell 7:
+
+pwsh -NoProfile -File .\verify.ps1
+
+Project installation:
+
+powershell -ExecutionPolicy Bypass -File .\install.ps1 --project .
+
+Or with PowerShell 7:
+
+pwsh -NoProfile -File .\install.ps1 --project .
+
+Another project:
+
+powershell -ExecutionPolicy Bypass -File .\install.ps1 --project C:\Projects\my_flutter_app
+
+Project destination:
+
+<project>\.agents\skills\
+
+Global installation:
+
+powershell -ExecutionPolicy Bypass -File .\install.ps1 --global
+
+Or with PowerShell 7:
+
+pwsh -NoProfile -File .\install.ps1 --global
+
+Script-based Windows global destination:
+
+%USERPROFILE%\.gemini\config\skills\
+
+Uninstall project copy:
+
+powershell -ExecutionPolicy Bypass -File .\uninstall.ps1 --project .
+
+Uninstall script-based global copy:
+
+powershell -ExecutionPolicy Bypass -File .\uninstall.ps1 --global
+
+6. Manual Project Installation
+
+If you do not want to run either npx or the installer scripts:
+
+Download or clone this repository.
+
+Copy the seven directories inside skills/.
+
+Paste them into:
+
+<your-project>/.agents/skills/
+
+Expected structure:
+
+<your-project>/
+└── .agents/
+    └── skills/
+        ├── flutter-a11y-rtl/
+        │   └── SKILL.md
+        ├── flutter-codebase-conventions/
+        │   └── SKILL.md
+        ├── flutter-performance/
+        │   └── SKILL.md
+        ├── flutter-production-audit/
+        │   └── SKILL.md
+        ├── flutter-responsive/
+        │   └── SKILL.md
+        ├── flutter-review-gate/
+        │   └── SKILL.md
+        └── flutter-state-management/
+            └── SKILL.md
+
+Restart Antigravity or start a new session after copying the skills.
+
+Installation Scope Summary
+
+Goal
+
+Recommended command
+
+Scope
+
+Use the skills in one Flutter project
+
+npx skills add Darshfb/antigravity-flutter-skills --skill '*' --agent antigravity
+
+Project
+
+Use the skills across Antigravity projects
+
+npx skills add Darshfb/antigravity-flutter-skills --skill '*' --agent antigravity --global
+
+Global
+
+Preview available skills
+
+npx skills add Darshfb/antigravity-flutter-skills --list
+
+No installation
+
+Verify project-installed skills
+
+npx skills ls -a antigravity
+
+Project
+
+Verify global Antigravity skills
+
+npx skills ls -g -a antigravity
+
+Global
+
+Use repository-managed scripts
+
+install.sh / install.ps1
+
+Project or global
+
+Avoid all installers
+
+Copy skills/* to .agents/skills/
+
+Project
+
+Avoid Duplicate Installations
+
+Antigravity may discover skills from more than one location.
+
+Potential locations include:
+
+<project>/.agents/skills/
+~/.gemini/antigravity/skills/
+~/.gemini/config/skills/
+
+When diagnosing discovery or version conflicts:
+
+Check project installation:
+
+npx skills ls -a antigravity
+
+Check global installation:
+
+npx skills ls -g -a antigravity
+
+Open the skill from Antigravity's project skills UI when available and verify which path is being used.
+
+Avoid keeping stale copies of the same skill in multiple global locations unless intentional.
+
+The repository installers do not automatically delete legacy copies.
+
+Skills
 
 The repository contains seven complementary Flutter skills.
 
-| Skill                          | Purpose                                                                                                                                                   |
-| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `flutter-production-audit`     | Orchestrates comprehensive production-readiness audits across the Flutter project                                                                         |
-| `flutter-state-management`     | Reviews async state flows, concurrency semantics, cancellation, lifecycle safety, state ownership, persistence, and rebuild scope                         |
-| `flutter-performance`          | Reviews meaningful performance and memory risks including rebuilds, I/O, startup, images, caching, large datasets, background work, and resource lifetime |
-| `flutter-codebase-conventions` | Keeps changes consistent with the existing project and detects meaningful duplication or convention drift                                                 |
-| `flutter-responsive`           | Reviews Flutter constraints, adaptive layouts, overflow risks, breakpoints, safe areas, large text, orientation, and multi-window behavior                |
-| `flutter-a11y-rtl`             | Reviews accessibility, semantics, RTL/LTR behavior, touch targets, text scaling, forms, focus, and localization-sensitive UI                              |
-| `flutter-review-gate`          | Performs the final post-implementation validation before an implementation can be considered complete                                                     |
+Skill
 
----
+Purpose
 
-## How the System Works
+flutter-production-audit
 
-The skills are designed to work together rather than as isolated checklists.
+Orchestrates comprehensive production-readiness audits and coordinates the specialist skills
 
-```text
+flutter-state-management
+
+Reviews state ownership, async semantics, concurrency, cancellation, optimistic updates, lifecycle safety, persistence, and rebuild scope
+
+flutter-performance
+
+Reviews meaningful performance and memory risks including rebuilds, startup, I/O, images, caching, large datasets, background work, and resource lifetime
+
+flutter-codebase-conventions
+
+Keeps changes consistent with the existing project and detects meaningful duplication, convention drift, and forced abstractions
+
+flutter-responsive
+
+Reviews Flutter constraints, adaptive layouts, overflow risks, breakpoints, safe areas, large text, orientation, resizing, and multi-window behavior
+
+flutter-a11y-rtl
+
+Reviews accessibility, semantics, RTL/LTR behavior, touch targets, text scaling, forms, focus, and localization-sensitive UI
+
+flutter-review-gate
+
+Performs the final post-implementation validation before an implementation can be considered complete
+
+How the System Works
+
                     ┌──────────────────────────┐
                     │ flutter-production-audit │
                     │       Orchestrator       │
@@ -62,21 +472,15 @@ The skills are designed to work together rather than as isolated checklists.
                     │ flutter-review-gate │
                     │  Final Validation   │
                     └─────────────────────┘
-```
 
-`flutter-production-audit` determines what needs to be investigated and routes relevant areas to specialist skills.
+flutter-production-audit determines what needs to be investigated and routes relevant areas to specialist skills.
 
 The specialist skills provide domain-specific reasoning.
 
-After an approved implementation is complete, `flutter-review-gate` performs the final validation.
+After an approved implementation is complete, flutter-review-gate performs final validation.
 
----
+Safety Model
 
-## Safety Model
-
-The workflow deliberately separates auditing from implementation.
-
-```text
 UNDERSTAND
     ↓
 TRACE
@@ -92,152 +496,84 @@ EXPLICIT APPROVAL
 IMPLEMENT
     ↓
 VALIDATE
-```
 
-A production audit does **not** automatically authorize code changes.
+A production audit does not automatically authorize code changes.
 
-The default workflow is:
-
-```text
-Audit
-  ↓
-Findings
-  ↓
-Implementation Plan
-  ↓
-Explicit Approval
-  ↓
-Implementation
-  ↓
-Review Gate
-```
-
-### A plan is not approval
-
-Generating an implementation plan does not authorize the agent to execute it.
-
-Discussion, acknowledgement, or responses such as:
-
-```text
-Looks good.
-Makes sense.
-Thanks.
-OK.
-```
-
-do not by themselves authorize implementation.
+A plan is not approval.
 
 Implementation requires an explicit instruction such as:
 
-```text
 Implement the approved plan.
-```
 
-or an unambiguous confirmation to a direct implementation question.
+This prevents audit findings from silently turning into unauthorized changes.
 
-This boundary is intentionally enforced to prevent audit findings from silently turning into unauthorized code changes.
+Evidence-Driven Reviews
 
----
+Confidence
 
-## Evidence-Driven Reviews
+Confirmed — the relevant execution path was traced and the problem was verified from available evidence.
 
-The skills distinguish confidence from severity.
+Likely — strong evidence exists, but part of the behavior could not be fully verified.
 
-### Confidence
+Needs verification — runtime, device, profiling, platform, or additional evidence is required.
 
-Findings are classified as:
+Severity
 
-* **Confirmed** — the relevant execution path was traced and the problem was verified from available evidence.
-* **Likely** — strong evidence exists, but part of the behavior could not be fully verified.
-* **Needs verification** — static evidence is insufficient and runtime, device, profiling, platform, or additional investigation is required.
+🔴 CRITICAL
 
-### Severity
+🟠 HIGH
 
-Confirmed or likely findings may separately be classified as:
+🟡 MEDIUM
 
-* 🔴 **CRITICAL**
-* 🟠 **HIGH**
-* 🟡 **MEDIUM**
-* 🔵 **LOW**
-* ⚪ **NEEDS VERIFICATION**
-* 🟢 **OK**
+🔵 LOW
+
+⚪ NEEDS VERIFICATION
+
+🟢 OK
 
 Severity and confidence are intentionally independent.
 
-For example:
-
-```text
-🟠 HIGH | Confirmed
-🟡 MEDIUM | Likely
-🔵 LOW | Confirmed
-⚪ NEEDS VERIFICATION
-```
-
-A potentially serious consequence is not automatically treated as confirmed simply because the underlying code looks suspicious.
-
----
-
-## Production-Readiness Discipline
-
-The audit system avoids unconditional production-readiness claims when the available evidence does not justify them.
+Production-Readiness Discipline
 
 Possible conclusions include:
 
-* **Production ready based on reviewed and validated scope**
-* **Production ready pending specified runtime/device verification**
-* **Conditionally ready**
-* **Not production ready yet**
-* **Insufficient coverage to determine**
+Production ready based on reviewed and validated scope
+
+Production ready pending specified runtime/device verification
+
+Conditionally ready
+
+Not production ready yet
+
+Insufficient coverage to determine
 
 A clean static analysis result alone does not establish production readiness.
 
 Passing tests alone do not establish production readiness either.
 
-Runtime behavior such as notifications, background execution, process restoration, platform-specific lifecycle behavior, actual device performance, and release-only behavior may still require physical-device or release-build verification.
-
----
-
-## Test and Coverage Discipline
+Test and Coverage Discipline
 
 The skills distinguish between:
 
-```text
 Tests passing
 Code coverage
 Behavioral coverage
 Runtime/device validation
-```
+Release-build validation
 
-These are different forms of evidence.
+Passing tests do not mean:
 
-Passing tests do **not** mean:
-
-```text
 100% covered
 fully covered
 all paths verified
 no bugs remain
-```
 
-Percentage-based coverage claims require actual measured coverage data such as LCOV or an equivalent report.
+Percentage-based coverage claims require measured evidence such as LCOV or equivalent.
 
-Without measured coverage data, the system uses qualitative descriptions such as:
+Architecture Neutrality
 
-* Strong automated coverage observed
-* Relevant flows have automated tests
-* Partial automated coverage
-* Important path appears untested
-* Coverage percentage not measured
+The following are not findings by themselves:
 
----
-
-## Architecture Neutrality
-
-The skills do not treat the absence of a particular technology as a defect.
-
-For example, the following are not findings by themselves:
-
-```text
 Navigator instead of go_router
 Provider instead of Bloc
 Bloc instead of Riverpod
@@ -245,54 +581,61 @@ get_it instead of another DI framework
 http instead of Dio
 manual serialization instead of code generation
 feature-first instead of layer-first organization
-```
 
 Architecture changes are recommended only when the existing implementation creates a concrete technical problem.
 
-The goal is to improve the project — not rewrite it according to personal preference.
-
----
-
-## Anti-Cargo-Cult Review Philosophy
-
-The specialist skills deliberately avoid mechanical Flutter advice.
+Anti-Cargo-Cult Review Philosophy
 
 The system does not automatically recommend:
 
-* `const` everywhere
-* `RepaintBoundary` everywhere
-* selectors everywhere
-* `SingleChildScrollView` for every overflow
-* `shrinkWrap: true` for every nested list
-* `Expanded` for every `Row` or `Column` issue
-* `Semantics` around every widget
-* replacing every `left/right` value with `start/end`
-* mirroring every icon for RTL
-* caching every request
-* moving every expensive-looking operation to an isolate
-* converting every repeated implementation into a shared abstraction
-* applying `droppable`, `restartable`, `sequential`, or `concurrent` based only on an event name
+const everywhere
+
+RepaintBoundary everywhere
+
+selectors everywhere
+
+SingleChildScrollView for every overflow
+
+shrinkWrap: true for every nested list
+
+Expanded for every Row or Column issue
+
+Semantics around every widget
+
+mirroring every icon for RTL
+
+caching every request
+
+moving every expensive-looking operation to an isolate
+
+converting every repeated implementation into a shared abstraction
+
+choosing Bloc event transformers from event names alone
 
 Recommendations must follow the actual semantics and execution path of the project.
 
----
+State-Management Reasoning
 
-## State-Management Reasoning
+The state-management skill supports:
 
-The state-management skill supports common Flutter approaches including:
+Bloc
 
-* Bloc
-* Cubit
-* Riverpod
-* Provider
-* ChangeNotifier
-* signals
-* `setState`
-* similar state-management approaches
+Cubit
 
-It specifically reasons about asynchronous semantics such as:
+Riverpod
 
-```text
+Provider
+
+ChangeNotifier
+
+signals
+
+setState
+
+similar approaches
+
+It reasons about:
+
 droppable
 restartable
 sequential
@@ -302,653 +645,432 @@ throttle
 deduplication
 cancellation
 optimistic updates
-```
 
-Concurrency strategies are selected based on user intent and side effects rather than pattern matching.
+Preserve user intent first. Optimize concurrency second.
 
-For example:
-
-```text
-Search query:
-Only the latest request may matter.
-
-Add item:
-Every action may matter.
-
-Toggle:
-The final desired state may matter.
-
-Payment:
-Duplicate execution may be unacceptable.
-```
-
-A central principle is:
-
-> **Preserve user intent first. Optimize concurrency second.**
-
----
-
-## Performance Philosophy
+Performance Philosophy
 
 The performance skill focuses on meaningful risks rather than micro-optimizations.
 
-It reviews areas such as:
+It reviews:
 
-* rebuild scope
-* expensive build-path work
-* startup initialization
-* database access
-* networking
-* large datasets
-* serialization and parsing
-* image decoding and caching
-* background work
-* timers and subscriptions
-* resource ownership
-* long-lived memory
-* unbounded collections
-* peak-memory behavior
+rebuild scope
 
-Static inspection does not automatically prove:
+build-path work
 
-```text
-jank
-frame drops
-OOM
-slow startup
-high memory usage
-good performance
-```
+startup initialization
 
-When actual impact depends on runtime conditions, the result is marked as requiring profiling or device verification.
+database access
 
----
+networking
 
-## Responsive and Adaptive UI
+large datasets
+
+serialization/parsing
+
+image decoding/caching
+
+background work
+
+timers/subscriptions
+
+resource ownership
+
+long-lived memory
+
+unbounded collections
+
+peak-memory behavior
+
+Static inspection does not automatically prove jank, frame drops, OOM, slow startup, or good runtime performance.
+
+Responsive and Adaptive UI
 
 The responsive skill reasons using Flutter's actual constraint system.
 
 It distinguishes between:
 
-* bounded and unbounded constraints
-* genuine small-screen overflow
-* nested-scroll constraint problems
-* incorrect `Expanded` / `Flexible` usage
-* fixed dimensions that are intentional vs. accidental
-* responsive vs. adaptive behavior
-* phone, tablet, desktop, web, foldable, split-screen, and live window resizing
+bounded and unbounded constraints
 
-The system does not treat a fixed width or height as a bug merely because it exists.
+genuine small-screen overflow
 
-The surrounding constraints and intended design determine whether it is problematic.
+nested-scroll constraint problems
 
----
+incorrect Expanded / Flexible usage
 
-## Accessibility, RTL, and Localization
+intentional vs accidental fixed dimensions
+
+responsive vs adaptive behavior
+
+phone, tablet, desktop, web, foldable, split-screen, and live resizing
+
+Accessibility, RTL, and Localization
 
 The accessibility and RTL skill reviews:
 
-* Directionality
-* RTL/LTR layout behavior
-* directional icons
-* semantics
-* screen-reader usability
-* text scaling
-* touch targets
-* forms
-* focus behavior
-* dialogs and modals
-* dynamic announcements
-* bidirectional text
-* localization-sensitive layouts
-* translated text expansion
+directionality
 
-It avoids mechanical rules such as mirroring every icon or wrapping every widget in `Semantics`.
+RTL/LTR behavior
 
-Built-in Flutter semantics and platform behavior are taken into account before reporting issues.
+directional icons
 
----
+semantics
 
-## Codebase Consistency
+screen-reader usability
 
-The codebase-conventions skill follows:
+text scaling
 
-> **Reuse before create — but do not force reuse.**
+touch targets
+
+forms
+
+focus
+
+dialogs/modals
+
+dynamic announcements
+
+bidirectional text
+
+localization-sensitive layouts
+
+translated text expansion
+
+It avoids mechanical rules such as mirroring every icon or wrapping every widget in Semantics.
+
+Codebase Consistency
+
+Reuse before create — but do not force reuse.
 
 Before introducing new widgets, services, helpers, repositories, validators, formatters, or utilities, the project is searched for existing functionality serving the same responsibility.
 
-However, visual similarity or repeated lines alone are not enough to justify abstraction.
+Visual similarity or repeated lines alone are not enough to justify abstraction.
 
-The skill distinguishes between:
+Review Gate
 
-```text
-Reuse
-Extend
-Create focused implementation
-Intentional duplication
-Migration/compatibility state
-```
-
-Correctness and clear responsibility boundaries take priority over achieving maximum DRYness.
-
----
-
-## Review Gate
-
-`flutter-review-gate` runs only after explicitly authorized implementation has been completed.
+flutter-review-gate runs only after explicitly authorized implementation has been completed.
 
 It reviews:
 
-1. Scope
-2. Correctness
-3. Codebase consistency
-4. UI when applicable
-5. Performance/resources when applicable
-6. Formatting
-7. Static analysis
-8. Tests and runtime-verification boundaries
-9. Final validation status
+Scope
 
-The review gate does not treat:
+Correctness
 
-```text
-flutter analyze passes
-+
-flutter test passes
-```
+Codebase consistency
 
-as automatic proof that the implementation is fully validated.
+UI when applicable
 
-The final result is classified as:
+Performance/resources when applicable
 
-* **Validated**
-* **Partially validated**
-* **Not validated**
+Formatting
 
-according to the evidence actually obtained.
+Static analysis
 
----
+Tests and runtime-verification boundaries
 
-# Installation
+Final validation status
 
-## Clone the Repository
+Final classifications:
 
-```bash
-git clone https://github.com/Darshfb/antigravity-flutter-skills.git
-cd antigravity-flutter-skills
-```
+Validated
 
-The repository provides native installation and verification scripts for:
+Partially validated
 
-* macOS
-* Linux
-* Windows PowerShell
+Not validated
 
----
+Example Workflows
 
-## macOS / Linux
+Ready-to-use prompts live under:
 
-### Verify the Repository
-
-Before installation, you can verify the repository structure, skill metadata, examples, and shell scripts:
-
-```bash
-chmod +x verify.sh
-./verify.sh
-```
-
-A successful verification ends with:
-
-```text
-Verification PASSED
-
-Errors:   0
-Warnings: 0
-```
-
-The installer also performs repository verification automatically before installation.
-
-### Global Installation
-
-Use global installation when you want the skills available across Antigravity projects.
-
-```bash
-chmod +x install.sh
-./install.sh --global
-```
-
-The skills are installed under:
-
-```text
-~/.gemini/config/skills/
-```
-
-### Project Installation
-
-Use project installation when you want the skills available only inside a specific project.
-
-For the current directory:
-
-```bash
-./install.sh --project .
-```
-
-Or specify a Flutter project:
-
-```bash
-./install.sh --project /path/to/flutter/project
-```
-
-The skills are installed under:
-
-```text
-<project>/.agents/skills/
-```
-
-### Uninstall
-
-Global installation:
-
-```bash
-chmod +x uninstall.sh
-./uninstall.sh --global
-```
-
-Project installation:
-
-```bash
-./uninstall.sh --project /path/to/flutter/project
-```
-
----
-
-## Windows
-
-Windows users can use the PowerShell scripts included in the repository.
-
-### Verify the Repository
-
-From PowerShell:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\verify.ps1
-```
-
-A successful verification ends with:
-
-```text
-Verification PASSED
-
-Errors:   0
-Warnings: 0
-```
-
-### Global Installation
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1 --global
-```
-
-The skills are installed under the current Windows user's profile:
-
-```text
-%USERPROFILE%\.gemini\config\skills\
-```
-
-In PowerShell, the equivalent location is based on:
-
-```powershell
-$HOME\.gemini\config\skills
-```
-
-### Project Installation
-
-For the current project:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1 --project .
-```
-
-Or specify another Flutter project:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\install.ps1 --project C:\Projects\my_flutter_app
-```
-
-The skills are installed under:
-
-```text
-<project>\.agents\skills\
-```
-
-### Uninstall
-
-Global installation:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\uninstall.ps1 --global
-```
-
-Project installation:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\uninstall.ps1 --project .
-```
-
----
-
-## Installation Behavior
-
-The installers manage only the seven skills contained in this repository.
-
-They do not intentionally remove unrelated skills.
-
-Global installation uses:
-
-```text
-~/.gemini/config/skills/
-```
-
-on macOS/Linux and the equivalent user-profile location on Windows.
-
-Project installation uses:
-
-```text
-.agents/skills/
-```
-
-inside the selected project.
-
-### Existing installations
-
-When reinstalling a managed skill, the installer replaces that skill's existing destination copy with the version contained in this repository.
-
-Unrelated skills remain untouched.
-
-### Legacy Antigravity skill location
-
-Older copies may exist under:
-
-```text
-~/.gemini/antigravity/skills/
-```
-
-or the equivalent Windows user-profile path.
-
-If managed skill directories are found there, the installer may warn that Antigravity could discover a different copy than the newly installed version.
-
-The installer does **not** automatically delete legacy copies.
-
-Remove them manually only after confirming they are no longer required.
-
-### Restart after installation
-
-After installation, restart Antigravity or start a new conversation/session so the updated skills are discovered.
-
----
-
-# Usage
-
-The repository includes ready-to-use prompts under:
-
-```text
 examples/
-```
 
-## Full Project Audit
+Goal
 
-Use:
+Prompt
 
-```text
+Audit the entire Flutter application
+
 examples/full-project-audit.md
-```
 
-when you want a comprehensive, read-only production-readiness audit.
+Audit one feature or user flow
 
-The audit should inspect the project systematically, use relevant specialist skills, report evidence-backed findings, identify areas requiring runtime verification, and stop before implementation.
+examples/targeted-feature-audit.md
 
----
+Investigate a specific bug
 
-## Implement an Approved Audit Plan
+examples/bug-investigation.md
 
-Use:
+Investigate performance or memory concerns
 
-```text
+examples/performance-audit.md
+
+Review state-management behavior
+
+examples/state-management-audit.md
+
+Review responsive/adaptive UI
+
+examples/responsive-ui-audit.md
+
+Review accessibility and RTL
+
+examples/accessibility-rtl-audit.md
+
+Review duplication and convention drift
+
+examples/codebase-consistency-audit.md
+
+Perform a final pre-release audit
+
+examples/pre-release-audit.md
+
+Implement an approved audit plan
+
 examples/implement-approved-audit-plan.md
-```
 
-only after an audit has already been completed and you have explicitly approved its implementation plan.
+Validate completed implementation
 
-This enters Implementation Mode for the approved scope and requires `flutter-review-gate` after implementation.
+examples/post-implementation-review.md
 
----
+See examples/README.md for the full workflow guide.
 
-# Recommended Workflow
+Recommended Production Workflow
 
-A typical production-readiness workflow is:
+1. Install into the project
 
-### 1. Verify the skill repository
+npx skills add Darshfb/antigravity-flutter-skills --skill '*' --agent antigravity
 
-macOS/Linux:
+2. Verify installation
 
-```bash
-./verify.sh
-```
+npx skills ls -a antigravity
 
-Windows:
+3. Confirm Antigravity discovery
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\verify.ps1
-```
+Restart Antigravity or open a new session, then:
 
-### 2. Install the skills
+Explicitly load and follow `flutter-production-audit`.
 
-Install globally or into the Flutter project you want to review.
+Before starting the audit, confirm whether this skill was successfully
+discovered and loaded for this workspace.
 
-### 3. Run the audit
+Do not modify project files.
+
+4. Run the audit
 
 Use:
 
-```text
 examples/full-project-audit.md
-```
 
-Antigravity reviews the project without modifying it.
+5. Review findings and plan
 
-### 4. Review the findings
+Review Critical/High findings, Medium findings, Needs-verification items, the implementation plan, and the readiness verdict.
 
-Check:
+6. Explicitly authorize implementation
 
-* Critical and High findings
-* Medium findings
-* Needs-verification items
-* proposed implementation plan
-* production-readiness verdict
-
-### 5. Approve the implementation
-
-After reviewing the plan, explicitly authorize it.
-
-For example:
-
-```text
 Implement the approved production-audit plan.
-```
 
-### 6. Implement
+7. Implement
 
 Use:
 
-```text
 examples/implement-approved-audit-plan.md
-```
 
-The implementation remains limited to the authorized scope.
+8. Validate
 
-### 7. Validate
+flutter-review-gate performs final validation.
 
-After implementation, `flutter-review-gate` performs final validation.
+9. Complete runtime verification
 
-### 8. Complete runtime verification
+Depending on the app, this may include:
 
-Some behavior may still require:
+Android physical-device testing
 
-* Android physical-device testing
-* iOS physical-device testing
-* background/foreground testing
-* process-death testing
-* notification verification
-* permission-denial testing
-* release-build testing
-* profiling with Flutter DevTools
-* store-specific validation
+iOS physical-device testing
 
-The review report should identify these explicitly rather than pretending they were automatically verified.
+background/foreground testing
 
----
+process-death testing
 
-# Repository Structure
+notification verification
 
-```text
+permission-denial testing
+
+release-build testing
+
+Flutter DevTools profiling
+
+store-specific validation
+
+Repository Structure
+
 antigravity-flutter-skills/
 ├── README.md
 ├── LICENSE
-│
 ├── install.sh
 ├── uninstall.sh
 ├── verify.sh
-│
 ├── install.ps1
 ├── uninstall.ps1
 ├── verify.ps1
 │
 ├── examples/
+│   ├── README.md
 │   ├── full-project-audit.md
-│   └── implement-approved-audit-plan.md
+│   ├── targeted-feature-audit.md
+│   ├── bug-investigation.md
+│   ├── performance-audit.md
+│   ├── state-management-audit.md
+│   ├── responsive-ui-audit.md
+│   ├── accessibility-rtl-audit.md
+│   ├── codebase-consistency-audit.md
+│   ├── pre-release-audit.md
+│   ├── implement-approved-audit-plan.md
+│   └── post-implementation-review.md
 │
 └── skills/
     ├── flutter-production-audit/
     │   └── SKILL.md
-    │
     ├── flutter-state-management/
     │   └── SKILL.md
-    │
     ├── flutter-performance/
     │   └── SKILL.md
-    │
     ├── flutter-codebase-conventions/
     │   └── SKILL.md
-    │
     ├── flutter-responsive/
     │   └── SKILL.md
-    │
     ├── flutter-a11y-rtl/
     │   └── SKILL.md
-    │
     └── flutter-review-gate/
         └── SKILL.md
-```
 
----
+Platform and Installation Support
 
-# Platform Support
+Platform
 
-| Platform | Verify       | Install       | Uninstall       |
-| -------- | ------------ | ------------- | --------------- |
-| macOS    | `verify.sh`  | `install.sh`  | `uninstall.sh`  |
-| Linux    | `verify.sh`  | `install.sh`  | `uninstall.sh`  |
-| Windows  | `verify.ps1` | `install.ps1` | `uninstall.ps1` |
+Project via npx skills
 
-Both global and project-scoped installation modes are supported.
+Global via npx skills
 
----
+Native scripts
 
-# Design Goals
+macOS
 
-This repository is designed around several principles.
+✅
 
-### Evidence over assumptions
+✅
+
+✅ Bash
+
+Linux
+
+✅
+
+✅
+
+✅ Bash
+
+Windows
+
+✅
+
+✅
+
+✅ PowerShell
+
+The project-scoped npx skills workflow is the recommended default.
+
+Design Goals
+
+Evidence over assumptions
 
 Report what the code supports, not what merely sounds plausible.
 
-### Correctness over style
+Correctness over style
 
 Do not turn architectural or stylistic preferences into production findings.
 
-### User intent over concurrency convenience
+User intent over concurrency convenience
 
 Do not drop, cancel, serialize, or merge user actions without understanding their semantics.
 
-### Performance evidence over folklore
+Performance evidence over folklore
 
 Do not recommend Flutter performance techniques mechanically.
 
-### Semantic reuse over superficial DRYness
+Semantic reuse over superficial DRYness
 
 Reuse existing functionality when responsibilities genuinely match.
 
-### Accessibility over checklist compliance
+Accessibility over checklist compliance
 
-Review actual user accessibility rather than counting `Semantics` widgets.
+Review actual user accessibility rather than counting Semantics widgets.
 
-### Constraints over screenshots
+Constraints over screenshots
 
 Responsive decisions should follow available layout constraints, not one device size.
 
-### Authorization before implementation
+Authorization before implementation
 
 An audit identifies and plans changes. It does not silently implement them.
 
-### Validation before success claims
+Validation before success claims
 
 Passing automated checks is valuable evidence, but conclusions must remain bounded by what was actually validated.
 
----
-
-# What This Project Does Not Promise
+What This Project Does Not Promise
 
 These skills improve the rigor and consistency of AI-assisted Flutter review and implementation.
 
-They do **not** guarantee:
+They do not guarantee:
 
-* absence of bugs
-* complete security verification
-* 100% test coverage
-* perfect runtime performance
-* correctness on every physical device
-* App Store or Google Play approval
-* replacement for platform/device testing
-* replacement for profiling when runtime performance matters
+absence of bugs
+
+complete security verification
+
+100% test coverage
+
+perfect runtime performance
+
+correctness on every physical device
+
+App Store or Google Play approval
+
+replacement for platform/device testing
+
+replacement for profiling when runtime performance matters
 
 Production-readiness conclusions should always remain bounded by the evidence collected during the audit and validation process.
 
----
-
-# Contributing
+Contributing
 
 Contributions are welcome when they improve correctness, evidence discipline, Flutter-specific reasoning, or reduce false positives.
 
 When proposing changes:
 
-1. Prefer concrete production failure modes over theoretical rules.
-2. Avoid architecture or package preferences without technical evidence.
-3. Preserve the separation between audit, authorization, implementation, and validation.
-4. Avoid duplicating specialist rules across multiple skills.
-5. Keep confidence and severity separate.
-6. Avoid rules that encourage mechanical or cargo-cult fixes.
-7. Include realistic examples when introducing new behavioral guardrails.
-8. Keep macOS/Linux and Windows tooling behavior aligned when changing installation or verification behavior.
+Prefer concrete production failure modes over theoretical rules.
 
----
+Avoid architecture or package preferences without technical evidence.
 
-# License
+Preserve the separation between audit, authorization, implementation, and validation.
 
-See [LICENSE](LICENSE).
+Avoid duplicating specialist rules across multiple skills.
 
----
+Keep confidence and severity separate.
 
-## Final Principle
+Avoid rules that encourage mechanical or cargo-cult fixes.
+
+Include realistic examples when introducing new behavioral guardrails.
+
+Keep macOS/Linux and Windows tooling behavior aligned when changing installation or verification behavior.
+
+Keep project and global installation instructions aligned with current Antigravity and skills CLI behavior.
+
+License
+
+See LICENSE.
+
+Final Principle
 
 These skills are not designed to make an AI reviewer sound confident.
 
-They are designed to make it **earn its confidence through evidence**.
+They are designed to make it earn its confidence through evidence.
