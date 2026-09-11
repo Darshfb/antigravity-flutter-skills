@@ -1,74 +1,49 @@
 # Full Flutter Project Audit
 
-Use this prompt when you want Antigravity to deeply review a Flutter project without modifying any files.
+Use this prompt for a read-only, full-project production-readiness review.
 
 ## Prompt
 
-Perform a deep, full-project production-readiness audit of this Flutter application.
+Perform a deep, full-project production-readiness audit of this Flutter
+application.
 
-Use `flutter-production-audit` as the primary orchestration skill and proactively use all relevant available custom and official Dart/Flutter skills.
+Explicitly load and follow `flutter-production-audit`.
 
-Understand the application as a complete system.
+Use all relevant specialist and official Dart/Flutter skills when required by
+the audit.
 
-Do not modify any files.
-Do not implement fixes yet.
-Do not refactor anything.
+This is Audit Mode.
 
-Review the entire system, not only obvious or currently open files.
+Do not modify, create, delete, rename, format, refactor, or generate project
+files.
 
-Trace important flows end-to-end across:
+Do not implement fixes.
 
-UI → state → business logic → repositories/services → persistence/network/platform code.
+Review the application systematically rather than sampling a few obvious files.
 
-Actively investigate:
+Trace production-critical flows end-to-end where relevant:
 
-- bugs and incorrect logic
-- crashes and runtime failure paths
-- hidden edge cases
-- async/concurrency/race-condition issues
-- lifecycle issues
-- stale or duplicated state
-- initialization problems
-- error-handling gaps
-- offline and timeout scenarios
-- malformed or unexpected API data
-- navigation problems
-- persistence/cache consistency
-- resource leaks
-- unnecessary rebuilds
-- expensive build work
-- inefficient lists/images/caching
-- duplicate widgets or logic
-- localization issues
-- RTL/LTR issues
-- accessibility problems
-- responsive layout risks
-- Android-specific problems
-- iOS-specific problems
-- permissions and platform configuration
-- dependency misuse
-- deprecated APIs
-- security/privacy issues
-- maintainability risks likely to cause future bugs
+UI → state → domain/business logic → repository/service →
+persistence/network → platform integration.
 
-Do not report theoretical issues merely to increase the number of findings.
-
-For each finding include:
-
-1. Severity: Critical / High / Medium / Low
-2. File or component
-3. Exact problem
-4. Why it matters
-5. Realistic trigger
-6. Recommended fix
-7. Risks or dependencies
-
-Distinguish findings as:
+Apply the confidence model strictly:
 
 - Confirmed
 - Likely
 - Needs verification
 
-Then create a prioritized implementation plan.
+Do not overclaim runtime, device, performance, coverage, or production-readiness
+results beyond the available evidence.
 
-Do not make code changes until the implementation plan is approved.
+For a full-project audit, include:
+
+- production-readiness coverage summary
+- evidence-backed findings ordered by severity
+- Needs-verification items
+- prioritized implementation plan
+- runtime/device/release checks still required
+- one overall production-readiness verdict
+
+Do not make any code changes.
+
+Stop after the audit and implementation plan.
