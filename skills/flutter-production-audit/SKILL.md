@@ -6,8 +6,8 @@ description: Performs comprehensive production-readiness audits of Flutter proje
 # Flutter Production Audit
 
 Act as a senior/staff Flutter engineer performing a production-readiness
-review: skeptical, evidence-driven, architecture-neutral, and conservative
-about claiming certainty.
+review: skeptical, evidence-driven, architecture-neutral, systematic, and
+conservative about claiming certainty.
 
 This skill is the audit orchestrator.
 
@@ -301,6 +301,16 @@ Pay particular attention to:
 - persistence semantics
 - state ownership
 
+For a full-project audit, do not classify the entire state/concurrency domain
+as healthy merely because a small number of Blocs, Cubits, providers, stores,
+or controllers correctly cancel subscriptions or dispose resources.
+
+Inspect the material state holders and the production-critical flows that can
+change persistent or user-visible state.
+
+Where multiple materially different state-management patterns exist, inspect
+enough of each pattern to determine whether the conclusion generalizes.
+
 ### Resilience
 
 Review realistic failure paths:
@@ -324,6 +334,54 @@ Use `flutter-performance`.
 
 Do not infer measurable runtime impact from static code when profiling or
 realistic data volume is required.
+
+For a full-project audit, performance coverage must not be reduced to isolated
+positive patterns such as:
+
+- one `RepaintBoundary`
+- controllers being disposed
+- `const` widgets
+- lazy list usage in one screen
+- one cache implementation
+- absence of obvious synchronous loops
+
+When applicable, inspect the material performance surfaces that actually exist,
+including:
+
+- startup and initialization
+- rebuild scope and high-frequency state changes
+- expensive build-path work
+- lists/grids and realistic collection sizes
+- images and decoded image memory
+- networking and duplicate requests
+- persistence/database access
+- serialization/parsing/transformation
+- caching and cache growth
+- large in-memory collections
+- timers, subscriptions, polling, and background work
+- controller/listener/resource lifetime
+- CPU-heavy main-isolate work
+- lifecycle-triggered repeated work
+
+If these surfaces were not sufficiently inspected, do not classify the entire
+performance/memory/resources domain as `Reviewed — OK`.
+
+Use `Not reviewed` or the appropriate verification status instead.
+
+Static inspection can establish structural performance risks or the absence of
+known issues in inspected paths.
+
+It cannot by itself establish:
+
+- smooth frame rendering
+- acceptable startup time
+- acceptable memory usage
+- absence of jank
+- absence of memory pressure
+- absence of OOM behavior
+- acceptable behavior under realistic production data volume
+
+unless the required runtime/profile evidence was actually collected.
 
 ### UI, responsiveness, accessibility, RTL
 
@@ -475,6 +533,57 @@ If the project contains multiple materially different implementations within
 one domain, inspect enough of them to understand whether the conclusion
 generalizes.
 
+### Domain coverage threshold
+
+For a material domain to be marked `Reviewed — OK` in a full-project audit,
+the audit must identify and inspect the material surfaces relevant to that
+domain.
+
+A small number of positive examples is not sufficient evidence for a
+domain-wide positive conclusion.
+
+Examples of insufficient evidence include:
+
+- inspecting one Bloc and declaring state management healthy
+- finding one `RepaintBoundary` and declaring performance healthy
+- observing disposed controllers and declaring resource management healthy
+- checking translation key parity and declaring all localization/RTL behavior
+  healthy
+- finding security rules and declaring live authorization behavior healthy
+- finding notification scheduling code and declaring notification delivery
+  reliable
+- seeing tests for some flows and declaring the project thoroughly tested
+
+Before marking a domain `Reviewed — OK`, be able to answer:
+
+1. What material surfaces in this domain exist?
+2. Which of those surfaces were inspected?
+3. Which production-critical flows were traced?
+4. What important evidence remains unavailable?
+5. Does the positive conclusion genuinely generalize across the inspected
+   domain?
+
+If these questions cannot be answered adequately, use:
+
+- `Finding(s) reported`
+- `Needs runtime/device verification`
+- `Not reviewed`
+- `Not applicable`
+
+as appropriate.
+
+Do not use a positive status merely because no issue was discovered.
+
+`Reviewed — OK` means:
+
+> The material static/project surfaces for this domain were sufficiently
+> inspected, no evidence-backed issue was found in that reviewed scope, and
+> any required external validation is separately identified.
+
+It does not mean:
+
+> This domain is proven defect-free.
+
 If coverage is limited by:
 
 - context limits
@@ -548,8 +657,6 @@ Omit theoretical concerns without realistic triggers.
 
 Do not let wording exceed the available evidence.
 
-Examples:
-
 | Evidence | Acceptable conclusion |
 |---|---|
 | Code path traced and defect demonstrated | Confirmed issue |
@@ -564,10 +671,14 @@ Do not convert:
 - "I did not find a bug" into "there are no bugs"
 - "tests pass" into "fully tested"
 - "tests pass" into "100% covered"
+- "many tests exist" into "thorough coverage"
+- "tests exist for important flows" into "all important flows are covered"
 - "static code looks correct" into "works on every device"
 - "no issue found in sampled files" into "entire domain is correct"
 - "notification scheduling exists" into "notifications reliably fire on all
   devices"
+- "security rules look correct" into "live authorization is verified"
+- "migrations have tests" into "all production migration paths are proven safe"
 
 Avoid unsupported absolutes such as:
 
@@ -575,6 +686,7 @@ Avoid unsupported absolutes such as:
 - all defects fixed
 - fully covered
 - 100% covered
+- thoroughly tested
 - cannot crash
 - guaranteed
 - works on every device
@@ -584,9 +696,11 @@ Prefer evidence-bounded wording such as:
 
 - No known Critical or High blockers were found in the reviewed scope.
 - Relevant automated tests passed.
+- Automated tests exist for several production-critical flows.
 - Coverage percentage was not measured.
 - No regression was identified in the reviewed flow.
 - Runtime/device verification remains required.
+- No known issue was found in the inspected static performance surfaces.
 
 ### Primary issue vs consequence
 
@@ -691,6 +805,25 @@ Passing tests prove only that the executed tests passed.
 
 They do not prove that every important path was exercised.
 
+The number of passing tests or test suites is not itself a coverage metric.
+
+For example:
+
+> 173/173 tests passed
+
+supports:
+
+> All 173 executed tests passed.
+
+It does not by itself support:
+
+- 100% coverage
+- thorough coverage
+- comprehensive coverage
+- all core flows are covered
+- the application is fully tested
+- production behavior is validated
+
 Do not claim percentage-based coverage unless actual measured coverage data was
 generated and inspected.
 
@@ -702,13 +835,28 @@ Claims such as:
 
 require LCOV or equivalent measured evidence.
 
-When no measured coverage report exists, use qualitative language:
+Qualitative coverage claims must also be evidence-bounded.
 
-- Strong automated coverage observed
-- Relevant flows have automated tests
-- Partial automated coverage
-- Important path appears untested
-- Coverage percentage not measured
+Use:
+
+- `Strong automated coverage observed in [named reviewed flows]`
+- `Relevant flows have automated tests`
+- `Partial automated coverage`
+- `Important path appears untested`
+- `Coverage percentage not measured`
+
+Do not use broad phrases such as:
+
+- thorough unit test coverage
+- comprehensive automated coverage
+- all important flows are tested
+
+unless the audit actually mapped the important flows to corresponding tests
+and has enough evidence to support that statement.
+
+When no measured coverage report exists, explicitly state:
+
+> Coverage percentage was not measured.
 
 Do not infer platform/device correctness from ordinary unit/widget tests.
 
@@ -717,12 +865,25 @@ Do not infer platform/device correctness from ordinary unit/widget tests.
 Production readiness must be bounded by what was actually reviewed and
 validated.
 
+The verdict must account for both:
+
+1. unresolved findings, and
+2. unavailable material validation.
+
+A positive verdict must not contradict the findings section.
+
 Use one of:
 
 ### 🟢 Production ready based on reviewed and validated scope
 
-Use when no unresolved Critical/High blockers remain in the reviewed material
-scope and the evidence required for that scope is sufficiently complete.
+Use when:
+
+- no unresolved confirmed release-blocking defect remains in the reviewed
+  material scope
+- no unresolved confirmed functional defect remains that the audit itself
+  recommends fixing before release
+- the evidence required for the reviewed scope is sufficiently complete
+- remaining limitations are genuinely non-material to the readiness conclusion
 
 This is still bounded to the reviewed scope.
 
@@ -730,22 +891,56 @@ It does not mean "bug-free."
 
 ### 🟢 Production ready pending specified runtime/device verification
 
-Use when static/project evidence is strong and no known release blocker remains,
-but specific material runtime/device/platform checks still need to be performed.
+Use only when:
 
-Name those checks explicitly.
+- static/project evidence is strong
+- no known release blocker remains
+- no unresolved confirmed production defect remains that should be fixed before
+  release
+- remaining uncertainty is specifically runtime/device/platform validation
+- those required checks are explicitly named
+
+Do not use this verdict merely because unresolved defects are non-crashing.
+
+A confirmed functional defect can still make a green readiness verdict
+inappropriate even when its severity is Medium or Low.
+
+If a confirmed defect remains and the implementation plan recommends fixing it
+before release, prefer `Conditionally ready` unless there is explicit evidence
+that the defect is accepted and non-blocking.
 
 ### 🟡 Conditionally ready
 
 Use when release may reasonably proceed only under clearly stated conditions,
-limitations, follow-up validation, or non-blocking unresolved uncertainty.
+limitations, fixes, follow-up validation, or non-blocking unresolved
+uncertainty.
 
-State the conditions.
+Use this verdict when, for example:
+
+- a confirmed production defect remains but is narrow and fixable
+- a Medium or Low functional defect should be resolved before release
+- material runtime/device checks remain and static evidence alone is not enough
+  for a green verdict
+- a release decision depends on a clearly stated product acceptance
+- a specific regression check must pass after an identified fix
+
+State the conditions explicitly.
+
+Example:
+
+> 🟡 Conditionally ready — fix the confirmed home-widget filtering defect,
+> rerun the affected regression tests, and complete the specified Android/iOS
+> device checks before release.
 
 ### 🔴 Not production ready yet
 
-Use when unresolved confirmed Critical/High blockers remain or a material
-production requirement is known to be broken.
+Use when:
+
+- unresolved confirmed Critical/High blockers remain
+- a material production requirement is known to be broken
+- a core user journey is confirmed broken
+- data integrity, security, privacy, or release-critical behavior is known to
+  be unsafe
 
 ### ⚪ Insufficient coverage to determine
 
@@ -760,6 +955,34 @@ still depends on unresolved:
 - platform behavior
 - store/release configuration
 - release-build validation
+
+### Verdict consistency check
+
+Before producing the final readiness verdict, compare it against every
+unresolved finding and Needs-verification item.
+
+Ask:
+
+1. Does any confirmed defect remain unresolved?
+2. Is it user-visible or production-functional?
+3. Does the implementation plan recommend fixing it before release?
+4. Does any Critical/High blocker remain?
+5. Does any material domain lack enough audit coverage?
+6. Does required runtime/device/platform evidence remain unavailable?
+7. Would the proposed verdict sound more positive than the evidence in the
+   report?
+
+If the answer to question 7 is yes, downgrade the verdict.
+
+A green verdict must not coexist with language elsewhere in the report that
+effectively says:
+
+- fix this production defect before release
+- a core flow remains broken
+- material audit coverage is incomplete
+- required evidence is unavailable beyond a narrow runtime verification step
+
+unless the apparent conflict is explicitly reconciled.
 
 ### Conservative tie-breaker
 
@@ -794,9 +1017,56 @@ Use:
 - **Not applicable**
 - **Not reviewed**
 
-Do not use 🟢 Reviewed — OK unless the area was actually inspected.
+### Coverage-summary status rules
+
+Use 🟢 `Reviewed — OK` only when:
+
+- the material static/project surfaces for that domain were actually inspected
+- important production-critical flows in that domain were traced where
+  applicable
+- the conclusion is not extrapolated from a small positive sample
+- no evidence-backed finding remains in that domain
+- unavailable external validation is separately identified where necessary
+
+Use `Finding(s) reported` when one or more evidence-backed findings exist in
+the domain.
+
+Do not mark a domain `Reviewed — OK` merely because its findings are only
+Medium or Low.
+
+Use ⚪ `Needs runtime/device verification` when static inspection is not enough
+to establish the material behavior being judged.
+
+Use `Not reviewed` when audit depth was insufficient for a defensible domain
+conclusion.
+
+Use `Not applicable` only when the domain genuinely does not apply to the
+project.
 
 Do not hide missing coverage behind a positive overall verdict.
+
+### Coverage-summary evidence
+
+For every `Reviewed — OK` domain in a full-project audit, provide concise
+evidence describing the material surfaces actually reviewed.
+
+Avoid evidence cells that contain only one isolated positive implementation
+detail.
+
+Bad:
+
+> Performance — Reviewed OK — RepaintBoundary exists and controllers are
+> disposed.
+
+Better:
+
+> Performance — Reviewed OK for inspected static surfaces — startup
+> initialization, rebuild-sensitive state flows, list rendering, database
+> access, cache lifetime, timers/subscriptions, and resource disposal were
+> inspected; runtime profiling remains separately required.
+
+If the better statement cannot truthfully be made, the domain should not be
+marked `Reviewed — OK`.
 
 ## Efficiency
 
@@ -832,9 +1102,22 @@ For a targeted audit include:
 For a full-project production-readiness audit additionally include:
 
 - production-readiness coverage summary
+- concise evidence for every positive domain status
 - material domains not reviewed
 - runtime/device/platform checks still required
+- test results without inflating them into unsupported coverage claims
+- coverage measurement status
 - overall production-readiness verdict using the taxonomy defined above
+
+Before finalizing a full-project report, perform a consistency pass:
+
+- every `Reviewed — OK` status is supported by sufficient domain coverage
+- no positive domain status conflicts with a finding in that domain
+- test wording does not exceed the actual test/coverage evidence
+- runtime/device behavior is not presented as statically proven
+- the final readiness verdict is consistent with unresolved findings
+- the final readiness verdict is consistent with missing verification
+- no sampled evidence was generalized into a project-wide guarantee
 
 Use evidence-bounded wording throughout.
 
