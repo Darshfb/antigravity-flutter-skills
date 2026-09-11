@@ -28,8 +28,18 @@ $ExpectedSkills = @(
 )
 
 $ExpectedExamples = @(
+    "README.md",
     "full-project-audit.md",
-    "implement-approved-audit-plan.md"
+    "targeted-feature-audit.md",
+    "bug-investigation.md",
+    "performance-audit.md",
+    "state-management-audit.md",
+    "responsive-ui-audit.md",
+    "accessibility-rtl-audit.md",
+    "codebase-consistency-audit.md",
+    "pre-release-audit.md",
+    "implement-approved-audit-plan.md",
+    "post-implementation-review.md"
 )
 
 $ExpectedBashScripts = @(

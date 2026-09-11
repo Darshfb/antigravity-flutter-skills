@@ -30,8 +30,18 @@ EXPECTED_SKILLS=(
 )
 
 EXPECTED_EXAMPLES=(
+  "README.md"
   "full-project-audit.md"
+  "targeted-feature-audit.md"
+  "bug-investigation.md"
+  "performance-audit.md"
+  "state-management-audit.md"
+  "responsive-ui-audit.md"
+  "accessibility-rtl-audit.md"
+  "codebase-consistency-audit.md"
+  "pre-release-audit.md"
   "implement-approved-audit-plan.md"
+  "post-implementation-review.md"
 )
 
 EXPECTED_BASH_SCRIPTS=(
