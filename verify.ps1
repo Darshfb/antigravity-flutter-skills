@@ -1,6 +1,15 @@
 $ErrorActionPreference = "Stop"
 
-$RepoDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+# ------------------------------------------------------------
+# Antigravity Flutter Skills - Windows Installer
+#
+# Installs the seven managed Flutter skills either globally
+# or into a specific project.
+#
+# Repository verification runs before installation.
+# ------------------------------------------------------------
+
+$RepoDir = $PSScriptRoot
 $SkillsDir = Join-Path $RepoDir "skills"
 $VerifyScript = Join-Path $RepoDir "verify.ps1"
 
@@ -44,6 +53,28 @@ Examples:
 "@
 }
 
+function Get-PowerShellExecutable {
+    # Prefer the same PowerShell generation currently running this script.
+
+    if ($PSVersionTable.PSEdition -eq "Core") {
+        $Candidate = Join-Path $PSHOME "pwsh.exe"
+
+        if (Test-Path $Candidate -PathType Leaf) {
+            return $Candidate
+        }
+
+        return "pwsh"
+    }
+
+    $Candidate = Join-Path $PSHOME "powershell.exe"
+
+    if (Test-Path $Candidate -PathType Leaf) {
+        return $Candidate
+    }
+
+    return "powershell"
+}
+
 function Run-Verification {
     Write-Host ""
     Write-Host "Verifying repository before installation..."
@@ -53,10 +84,15 @@ function Run-Verification {
         throw "verify.ps1 was not found: $VerifyScript"
     }
 
-    & powershell -ExecutionPolicy Bypass -File $VerifyScript
+    $PowerShellExecutable = Get-PowerShellExecutable
+
+    & $PowerShellExecutable `
+        -NoProfile `
+        -ExecutionPolicy Bypass `
+        -File $VerifyScript
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Repository verification failed."
+        throw "Repository verification failed. Installation aborted."
     }
 }
 
@@ -85,6 +121,7 @@ function Check-LegacyGlobalInstallation {
         Write-Host "Consider removing the old copies after confirming they are no longer needed."
         Write-Host ""
         Write-Host "This installer will NOT delete them automatically."
+        Write-Host ""
     }
 }
 
@@ -93,6 +130,14 @@ function Install-Skills {
         [Parameter(Mandatory = $true)]
         [string]$Destination
     )
+
+    if ([string]::IsNullOrWhiteSpace($Destination)) {
+        throw "Destination path is empty."
+    }
+
+    if (-not (Test-Path $SkillsDir -PathType Container)) {
+        throw "Skills directory does not exist: $SkillsDir"
+    }
 
     New-Item -ItemType Directory -Force -Path $Destination | Out-Null
 
@@ -113,14 +158,18 @@ function Install-Skills {
         $SkillFile = Join-Path $SourceDir "SKILL.md"
 
         if (-not (Test-Path $SkillFile -PathType Leaf)) {
-            throw "Missing: $SkillFile"
+            throw "Missing skill file: $SkillFile"
         }
 
         if (Test-Path $DestinationDir) {
             Remove-Item -Recurse -Force $DestinationDir
         }
 
-        Copy-Item -Recurse -Force $SourceDir $DestinationDir
+        Copy-Item `
+            -Path $SourceDir `
+            -Destination $DestinationDir `
+            -Recurse `
+            -Force
 
         Write-Host "✓ $Skill"
     }
@@ -137,12 +186,18 @@ function Install-Skills {
     Write-Host ""
 }
 
+# ------------------------------------------------------------
+# Arguments
+# ------------------------------------------------------------
+
 if ($args.Count -lt 1) {
     Show-Usage
     exit 1
 }
 
-switch ($args[0]) {
+$Mode = $args[0]
+
+switch ($Mode) {
     "--global" {
         Run-Verification
         Check-LegacyGlobalInstallation
@@ -150,7 +205,12 @@ switch ($args[0]) {
     }
 
     "--project" {
-        $ProjectPath = if ($args.Count -ge 2) { $args[1] } else { "." }
+        $ProjectPath = if ($args.Count -ge 2) {
+            $args[1]
+        }
+        else {
+            "."
+        }
 
         if (-not (Test-Path $ProjectPath -PathType Container)) {
             throw "Project directory does not exist: $ProjectPath"
@@ -172,7 +232,7 @@ switch ($args[0]) {
     }
 
     default {
-        Write-Host "Error: Unknown option: $($args[0])"
+        Write-Host "Error: Unknown option: $Mode"
         Write-Host ""
         Show-Usage
         exit 1

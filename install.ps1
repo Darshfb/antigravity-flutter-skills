@@ -5,11 +5,16 @@ $ErrorActionPreference = "Stop"
 #
 # Installs the seven managed Flutter skills either globally
 # or into a specific project.
+#
+# Repository verification runs before installation.
 # ------------------------------------------------------------
 
 $RepoDir = $PSScriptRoot
 $SkillsDir = Join-Path $RepoDir "skills"
 $VerifyScript = Join-Path $RepoDir "verify.ps1"
+
+$GlobalDestination = Join-Path $HOME ".gemini\config\skills"
+$LegacyGlobalDestination = Join-Path $HOME ".gemini\antigravity\skills"
 
 $Skills = @(
     "flutter-production-audit",
@@ -32,10 +37,10 @@ Usage:
 
 Options:
   --global
-      Install the skills globally for Antigravity projects.
+      Install the skills globally for the current user.
 
   --project [path]
-      Install the skills into a specific project's .agents\skills directory.
+      Install the skills only into a specific project.
       Defaults to the current directory when no path is provided.
 
   --help
@@ -48,53 +53,73 @@ Examples:
 "@
 }
 
-function Test-LegacyInstallation {
-    $LegacyDirectory = Join-Path $HOME ".gemini\antigravity\skills"
+function Get-PowerShellExecutable {
+    if ($PSVersionTable.PSEdition -eq "Core") {
+        $Candidate = Join-Path $PSHOME "pwsh.exe"
 
-    if (-not (Test-Path $LegacyDirectory -PathType Container)) {
-        return
-    }
-
-    $FoundLegacySkill = $false
-
-    foreach ($Skill in $Skills) {
-        $LegacySkillPath = Join-Path $LegacyDirectory $Skill
-
-        if (Test-Path $LegacySkillPath -PathType Container) {
-            $FoundLegacySkill = $true
-            break
+        if (Test-Path $Candidate -PathType Leaf) {
+            return $Candidate
         }
+
+        return "pwsh"
     }
 
-    if ($FoundLegacySkill) {
-        Write-Host ""
-        Write-Host "Warning: older copies of these skills were found in:"
-        Write-Host ""
-        Write-Host "  $LegacyDirectory"
-        Write-Host ""
-        Write-Host "Antigravity may load a different copy than the one installed into:"
-        Write-Host ""
-        Write-Host "  $HOME\.gemini\config\skills"
-        Write-Host ""
-        Write-Host "Consider removing the old copies after confirming they are no longer needed."
-        Write-Host ""
-        Write-Host "This installer will NOT delete them automatically."
+    $Candidate = Join-Path $PSHOME "powershell.exe"
+
+    if (Test-Path $Candidate -PathType Leaf) {
+        return $Candidate
     }
+
+    return "powershell"
 }
 
-function Invoke-RepositoryVerification {
-    if (-not (Test-Path $VerifyScript -PathType Leaf)) {
-        throw "Verification script is missing: $VerifyScript"
-    }
-
+function Run-Verification {
     Write-Host ""
     Write-Host "Verifying repository before installation..."
     Write-Host ""
 
-    & $VerifyScript
+    if (-not (Test-Path $VerifyScript -PathType Leaf)) {
+        throw "verify.ps1 was not found: $VerifyScript"
+    }
+
+    $PowerShellExecutable = Get-PowerShellExecutable
+
+    & $PowerShellExecutable `
+        -NoProfile `
+        -ExecutionPolicy Bypass `
+        -File $VerifyScript
 
     if ($LASTEXITCODE -ne 0) {
         throw "Repository verification failed. Installation aborted."
+    }
+}
+
+function Check-LegacyGlobalInstallation {
+    $Found = $false
+
+    foreach ($Skill in $Skills) {
+        $LegacyPath = Join-Path $LegacyGlobalDestination $Skill
+
+        if (Test-Path $LegacyPath -PathType Container) {
+            $Found = $true
+            break
+        }
+    }
+
+    if ($Found) {
+        Write-Host ""
+        Write-Host "Warning: older copies of these skills were found in:"
+        Write-Host ""
+        Write-Host "  $LegacyGlobalDestination"
+        Write-Host ""
+        Write-Host "Antigravity may load a different copy than the one installed into:"
+        Write-Host ""
+        Write-Host "  $GlobalDestination"
+        Write-Host ""
+        Write-Host "Consider removing the old copies after confirming they are no longer needed."
+        Write-Host ""
+        Write-Host "This installer will NOT delete them automatically."
+        Write-Host ""
     }
 }
 
@@ -126,21 +151,21 @@ function Install-Skills {
     Write-Host ""
 
     foreach ($Skill in $Skills) {
-        $SourceDirectory = Join-Path $SkillsDir $Skill
-        $SkillFile = Join-Path $SourceDirectory "SKILL.md"
-        $DestinationDirectory = Join-Path $Destination $Skill
+        $SourceDir = Join-Path $SkillsDir $Skill
+        $DestinationDir = Join-Path $Destination $Skill
+        $SkillFile = Join-Path $SourceDir "SKILL.md"
 
         if (-not (Test-Path $SkillFile -PathType Leaf)) {
             throw "Missing skill file: $SkillFile"
         }
 
-        if (Test-Path $DestinationDirectory) {
-            Remove-Item -Recurse -Force $DestinationDirectory
+        if (Test-Path $DestinationDir) {
+            Remove-Item -Recurse -Force $DestinationDir
         }
 
         Copy-Item `
-            -Path $SourceDirectory `
-            -Destination $DestinationDirectory `
+            -Path $SourceDir `
+            -Destination $DestinationDir `
             -Recurse `
             -Force
 
@@ -149,7 +174,6 @@ function Install-Skills {
 
     Write-Host ""
     Write-Host "====================================="
-    Write-Host ""
     Write-Host "Installation complete."
     Write-Host ""
     Write-Host "Installed to:"
@@ -172,14 +196,9 @@ if ($args.Count -lt 1) {
 $Mode = $args[0]
 
 switch ($Mode) {
-
     "--global" {
-        Invoke-RepositoryVerification
-
-        Test-LegacyInstallation
-
-        $GlobalDestination = Join-Path $HOME ".gemini\config\skills"
-
+        Run-Verification
+        Check-LegacyGlobalInstallation
         Install-Skills -Destination $GlobalDestination
     }
 
@@ -198,8 +217,7 @@ switch ($Mode) {
         $ProjectPath = (Resolve-Path $ProjectPath).Path
         $ProjectDestination = Join-Path $ProjectPath ".agents\skills"
 
-        Invoke-RepositoryVerification
-
+        Run-Verification
         Install-Skills -Destination $ProjectDestination
     }
 
